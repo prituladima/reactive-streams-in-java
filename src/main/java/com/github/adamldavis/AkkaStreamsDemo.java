@@ -104,7 +104,7 @@ public class AkkaStreamsDemo implements ReactiveStreamsDemo {
     public java.util.concurrent.Future<String> doParallelStringConcatAsync(int count) {
         return Source.range(0, count - 1).mapAsyncUnordered(8, x ->
                         Source.single(x).map(i -> "i=" + i).runWith(Sink.last(), materializer))
-                .fold(new StringBuilder(), (builder, it) -> builder.append(it))
+                .fold(new StringBuilder(), StringBuilder::append)
                 .map(StringBuilder::toString)
                 .toMat(Sink.last(), Keep.right()).run(materializer)
                 .toCompletableFuture();
@@ -122,7 +122,7 @@ public class AkkaStreamsDemo implements ReactiveStreamsDemo {
         final Source<String, NotUsed> errors = messages
                 .filter(m -> m.startsWith("Error")) // 3
                 .buffer(200, OverflowStrategy.fail())
-                .alsoTo(Sink.foreach(messageList::add)).map(m -> m.toString()); // 4
+                .alsoTo(Sink.foreach(messageList::add)); // 4
 
         errors.runWith(Sink.foreach(System.out::println), mat); // 5
     }
